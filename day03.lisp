@@ -45,14 +45,34 @@
 
 (day03-part1 "day03_input.txt")
 
-(defun day03-part2 (input-file)
+(defun day03-part2-slow (input-file)
   (let* ((claims (read-claims input-file))
          (claim-ids (mapcar #'claim-id claims))
          (fabric (mark-claims! (make-fabric 1000 1000) claims)))
-    (dotimes (x 1000 claim-ids)
+    (dotimes (x 1000 (car claim-ids))
       (dotimes (y 1000)
         (let ((place (aref fabric x y)))
           (if (> (length place) 1)
               (setq claim-ids (nset-difference claim-ids place))))))))
 
-(time (day03-part2 "day03_input.txt"))
+(defun hash-keys (hash-table)
+  (loop for key being the hash-keys of hash-table collect key))
+
+(defun list->set (xs &optional (test #'eql))
+  (let ((hsh (make-hash-table :test test)))
+    (dolist (x xs hsh)
+      (setf (gethash x hsh) t))))
+
+(defun day03-part2-fast (input-file)
+  (let* ((claims (read-claims input-file))
+         (possible (list->set (mapcar #'claim-id claims)))
+         (fabric (mark-claims! (make-fabric 1000 1000) claims)))
+    (dotimes (x 1000 (car (hash-keys possible)))
+      (dotimes (y 1000)
+        (let ((place (aref fabric x y)))
+          (if (> (length place) 1)
+              (dolist (id place)
+                (remhash id possible))))))))
+
+(time (day03-part2-slow "day03_input.txt"))
+(time (day03-part2-fast "day03_input.txt"))
