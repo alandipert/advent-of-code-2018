@@ -76,3 +76,5 @@
 
 (time (day03-part2-slow "day03_input.txt"))
 (time (day03-part2-fast "day03_input.txt"))
+
+;; TODO quadtree version?
