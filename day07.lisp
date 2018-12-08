@@ -59,7 +59,7 @@
   (loop for i below (length workers)
         for worker = (aref workers i)
         if worker do (decf (cdr (aref workers i)))
-        finally (return workers)))
+          finally (return workers)))
 
 (defun in-progress (workers)
   (map 'list #'car (remove nil workers)))
@@ -69,7 +69,7 @@
         (completed ()
                    (nconc completed (gather-completed! workers)))
         (available (available nil pairs)
-                   (set-difference
+                   (nset-difference
                     (available completed pairs)
                     (in-progress workers)))
         (workers (start-work!
