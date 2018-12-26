@@ -12,8 +12,7 @@
 (defun print-node (node stream depth)
   (declare (ignore depth))
   (loop for next = node then (node-right next)
-        for continue = t then (and next
-                                   (not (equal next node)))
+        for continue = t then (and next (not (equal next node)))
         while continue
         do (format stream "~A " (node-value next))
         finally (format stream "~%")))
@@ -42,29 +41,22 @@
     (setf (node-right start) start
           (node-left start) start)))
 
-(defun highest-score (scores)
-  (loop for score being the hash-values of scores
-        maximize score))
-
 (defun to-zero (node)
   (if (zerop (node-value node))
       node
       (to-zero (node-left node))))
 
 (defun play (players marbles)
-  (loop with scores = (make-hash-table)
-        with node = (make-start)
-        for m from 1 to marbles
-        for player = 0 then (mod (1+ player) players)
-        if (zerop (mod m 23))
-          do (let ((to-unlink (move node -7)))
-               (incf (gethash player scores 0)
-                     (+ m (node-value to-unlink)))
-               (setq node (unlink to-unlink)))
-        else
-          do (setq node
-                   (insert (node-right node) (make-node :value m)))
-        finally (return (highest-score scores))))
+  (do ((scores (make-array `(,players) :initial-element 0))
+       (node (make-start))
+       (m 1 (1+ m))
+       (player 0 (mod (1+ player) players)))
+      ((>= m marbles) (reduce #'max scores))
+    (if (zerop (mod m 23))
+        (let ((to-unlink (move node -7)))
+          (incf (aref scores player) (+ m (node-value to-unlink)))
+          (setq node (unlink to-unlink)))
+        (setq node (insert (node-right node) (make-node :value m))))))
 
 (defun day09-part1 (input-file)
   (apply #'play (read-input input-file)))
